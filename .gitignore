@@ -1,0 +1,7 @@
+src/libmemory_monitor.so
+tests/test_allocations
+tests/test_mmap
+tests/test_shm
+# *.out
+# *.txt
+# *.bin
