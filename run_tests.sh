@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# Kompilacja biblioteki i programów testowych (przykład)
-gcc -shared -fPIC src/memory_monitor.c -o src/libmemory_monitor.so -ldl
+# Kompilacja biblioteki i programów testowych
+gcc -shared -fPIC src/memory_monitor.c -o src/libmemory_monitor.so -ldl -g
 gcc tests/test_allocations.c -o tests/test_allocations
 gcc tests/test_mmap.c -o tests/test_mmap
 gcc tests/test_shm.c -o tests/test_shm
@@ -21,4 +21,4 @@ for TEST in "${TESTS[@]}"; do
   echo
 done
 
-echo "Możesz teraz porównać dane (mallinfo) z plików monitor_*.out z logami wywołań systemowych w strace_*.txt."
+echo "Można teraz porównać dane (mallinfo) z plików monitor_*.out z logami wywołań systemowych w strace_*.txt."
