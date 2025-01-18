@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Dokumentacja Projektu: Monitorowanie i Analiza Przydziału Pamięci</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            line-height: 1.6;
+        }
+        h1, h2, h3 {
+            color: #2F4F4F;
+        }
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .section {
+            margin-bottom: 40px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Dokumentacja Projektu: Monitorowanie i Analiza Przydziału Pamięci</h1>
+
+    <div class="section" id="general-concept">
+        <h2>1. Ogólna Koncepcja</h2>
+        <p>
+            Celem projektu jest stworzenie biblioteki umożliwiającej monitorowanie i analizę zużycia pamięci przez procesy w systemie operacyjnym Linux. Biblioteka przechwytuje operacje alokacji i dealokacji pamięci, ładowania bibliotek dynamicznych oraz korzystania z mechanizmów pamięci współdzielonej i mapowania plików w pamięci.
+        </p>
+        <p>
+            Monitorowanie obejmuje śledzenie takich operacji jak <code>malloc</code>, <code>free</code>, <code>calloc</code>, <code>realloc</code>, <code>mmap</code>, <code>munmap</code>, <code>dlopen</code>, <code>dlclose</code> oraz <code>sbrk</code>. Zbierane dane obejmują ilość przydzielonej pamięci w KB/MB oraz liczbie stron pamięci, co umożliwia dogłębną analizę zarządzania pamięcią przez obserwowany proces.
+        </p>
+        <p>
+            Biblioteka wykorzystuje mechanizm interpozcji poprzez zmienną środowiskową <code>LD_PRELOAD</code>, co pozwala na przechwytywanie wywołań funkcji bez modyfikacji kodu źródłowego monitorowanego procesu.
+        </p>
+    </div>
+
+    <div class="section" id="system-mechanisms">
+        <h2>2. Zastosowane Mechanizmy Systemowe</h2>
+        <h3>2.1. LD_PRELOAD</h3>
+        <p>
+            <code>LD_PRELOAD</code> to zmienna środowiskowa w systemie Linux, która pozwala załadować dodatkowe biblioteki współdzielone przed wszystkimi innymi bibliotekami podczas uruchamiania procesu. W projekcie wykorzystano <code>LD_PRELOAD</code> do przechwytywania standardowych funkcji alokacji pamięci oraz funkcji związanych z ładowaniem bibliotek dynamicznych.
+        </p>
+        <h3>2.2. Interpozja Funkcji</h3>
+        <p>
+            Interpozja polega na nadpisaniu standardowych funkcji bibliotecznych własnymi implementacjami. Dzięki temu można monitorować i modyfikować zachowanie programów bez konieczności ich modyfikacji. W projekcie interpozja umożliwia przechwytywanie wywołań funkcji takich jak <code>malloc</code>, <code>free</code>, <code>mmap</code> itp.
+        </p>
+        <h3>2.3. Funkcje i Struktury Mallinfo oraz Mallopt</h3>
+        <p>
+            Funkcje te są używane do zbierania informacji o stanie alokacji pamięci dynamicznej w procesie. <code>mallinfo</code> dostarcza szczegółowe dane dotyczące zarządzania pamięcią, natomiast <code>mallopt</code> pozwala na dostosowanie parametrów alokatora pamięci.
+        </p>
+        <h3>2.4. Strace</h3>
+        <p>
+            <code>strace</code> to narzędzie służące do śledzenia wywołań systemowych wykonywanych przez proces. W projekcie użyto <code>strace</code> do porównania zebranych danych z biblioteki monitorującej z rzeczywistymi wywołaniami systemowymi, co pozwala na walidację poprawności działania mechanizmów monitorowania.
+        </p>
+    </div>
+
+    <div class="section" id="process-description">
+        <h2>3. Opis Procesów i Zależności</h2>
+        <h3>3.1. Proces Główny</h3>
+        <p>
+            Głównym procesem jest skrypt <code>run_tests.sh</code>, który kompiluje bibliotekę monitorującą oraz testowe aplikacje, a następnie uruchamia je z wykorzystaniem <code>LD_PRELOAD</code> do załadowania <code>libmemory_monitor.so</code>.
+        </p>
+        <h3>3.2. Biblioteki Monitorujące</h3>
+        <p>
+            <strong>libmemory_monitor.so</strong>: Biblioteka przechwytuje wywołania funkcji związanych z alokacją pamięci oraz ładowaniem bibliotek dynamicznych. Loguje szczegóły operacji oraz aktualne zużycie pamięci.
+            <br>
+            <strong>libhello.so</strong>: Prosta biblioteka dynamiczna używana w testach do weryfikacji poprawności działania mechanizmów <code>dlopen</code> i <code>dlsym</code>.
+        </p>
+        <h3>3.3. Testowe Aplikacje</h3>
+        <p>
+            <strong>test_allocations</strong>: Testuje operacje alokacji i dealokacji pamięci dynamicznej.
+            <br>
+            <strong>test_mmap</strong>: Testuje operacje mapowania plików w pamięci przy użyciu <code>mmap</code>.
+            <br>
+            <strong>test_shm</strong>: Testuje operacje związane z pamięcią współdzieloną.
+            <br>
+            <strong>test_library_load</strong>: Testuje ładowanie i zamykanie bibliotek dynamicznych przy użyciu <code>dlopen</code> i <code>dlclose</code>.
+        </p>
+        <h3>3.4. Kanały Komunikacyjne</h3>
+        <p>
+            Komunikacja między procesami odbywa się głównie poprzez mechanizmy pamięci współdzielonej oraz standardowe wyjścia (stdout, stderr) używane do logowania informacji przez bibliotekę monitorującą.
+        </p>
+    </div>
+
+    <div class="section" id="installation-and-setup">
+        <h2>4. Instalacja i Uruchomienie</h2>
+        <h3>4.1. Wymagania Systemowe</h3>
+        <ul>
+            <li>System operacyjny: Linux</li>
+            <li>Komunikator C: GCC</li>
+            <li>Narzędzie Doxygen (opcjonalnie, do generowania dokumentacji)</li>
+        </ul>
+        <h3>4.2. Kroki Instalacyjne</h3>
+        <ol>
+            <li>
+                <strong>Klonowanie Repozytorium:</strong>
+                <pre><code>git clone https://github.com/Horqu/memory-monitor.git</code></pre>
+            </li>
+            <li>
+                <strong>Nawigacja do Katalogu Projektu:</strong>
+                <pre><code>cd memory-monitor</code></pre>
+            </li>
+            <li>
+                <strong>Nadanie Uprawnień do Skryptu Testowego:</strong>
+                <pre><code>chmod +x run_tests.sh</code></pre>
+            </li>
+            <li>
+                <strong>Uruchomienie Skryptu Testowego:</strong>
+                <pre><code>./run_tests.sh</code></pre>
+                <p>Skrypt ten skompiluje bibliotekę monitorującą oraz aplikacje testowe, a następnie uruchomi je z wykorzystaniem <code>LD_PRELOAD</code>.</p>
+            </li>
+        </ol>
+        <h3>4.3. Konfiguracja</h3>
+        <p>
+            Skrypt <code>run_tests.sh</code> ustawia ścieżkę do bibliotek monitorujących poprzez zmienną środowiskową <code>LD_LIBRARY_PATH</code>. Umożliwia to dynamiczne ładowanie bibliotek bez konieczności modyfikacji zmiennych systemowych.
+        </p>
+    </div>
+
+    <div class="section" id="program-structure">
+        <h2>5. Struktura Programu (Generowana przez Doxygen)</h2>
+        <p>
+            Poniżej znajduje się diagram struktury programu wygenerowany przez Doxygen, ilustrujący zależności między modułami oraz główne komponenty projektu.
+        </p>
+        <pre><code class="language-plaintext">
+memory-monitor/
+├── src/
+│   ├── memory_monitor.c
+│   ├── libhello.c
+│   └── libmemory_monitor.so
+├── tests/
+│   ├── test_allocations.c
+│   ├── test_mmap.c
+│   ├── test_shm.c
+│   └── test_library_load.c
+├── run_tests.sh
+└── docs/
+    └── index.html
+        </code></pre>
+        <p>
+            <strong>Opis Modułów:</strong>
+        </p>
+        <ul>
+            <li><strong>src/memory_monitor.c</strong>: Implementacja biblioteki monitorującej, przechwytującej wywołania funkcji alokacji pamięci oraz ładowania bibliotek dynamicznych.</li>
+            <li><strong>src/libhello.c</strong>: Prosta biblioteka dynamiczna używana w testach do weryfikacji funkcji <code>dlopen</code> i <code>dlsym</code>.</li>
+            <li><strong>tests/test_allocations.c</strong>: Testuje operacje alokacji i dealokacji pamięci dynamicznej.</li>
+            <li><strong>tests/test_mmap.c</strong>: Testuje operacje mapowania plików w pamięci za pomocą <code>mmap</code>.</li>
+            <li><strong>tests/test_shm.c</strong>: Testuje operacje związane z pamięcią współdzieloną.</li>
+            <li><strong>tests/test_library_load.c</strong>: Testuje ładowanie i zamykanie bibliotek dynamicznych.</li>
+            <li><strong>run_tests.sh</strong>: Skrypt automatyzujący kompilację i uruchamianie testów.</li>
+            <li><strong>docs/index.html</strong>: Wygenerowana dokumentacja projektu za pomocą Doxygen.</li>
+        </ul>
+    </div>
+
+    <div class="section" id="conclusion">
+        <h2>6. Podsumowanie</h2>
+        <p>
+            Projekt "Monitorowanie i Analiza Przydziału Pamięci" dostarcza narzędzia do dokładnej analizy zarządzania pamięcią przez procesy w systemie Linux. Dzięki wykorzystaniu interpozji funkcji oraz mechanizmów takich jak <code>LD_PRELOAD</code>, <code>strace</code>, pamięć współdzieloną i mapowanie plików, możliwe jest monitorowanie i logowanie kluczowych operacji pamięciowych.
+        </p>
+        <p>
+            Stworzona dokumentacja, wygenerowana przy użyciu Doxygen, zapewnia przejrzysty przegląd struktury programu oraz szczegółowe opisy poszczególnych modułów, co ułatwia dalszy rozwój i utrzymanie projektu.
+        </p>
+    </div>
+
+</body>
+</html>

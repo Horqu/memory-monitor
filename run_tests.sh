@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 # Ścieżka do bibliotek monitorujących pamięć
-MONITOR_LIB="/root/studia/memory-monitor/src/libmemory_monitor.so"
-HELLO_LIB="/root/studia/memory-monitor/src/libhello.so"
+MONITOR_LIB="src/libmemory_monitor.so"
+HELLO_LIB="src/libhello.so"
 
 # Kompilacja bibliotek i programów testowych z obsługą błędów
 gcc -shared -fPIC src/memory_monitor.c -o src/libmemory_monitor.so -ldl -pthread -g || { echo "Kompilacja libmemory_monitor.so nie powiodła się"; exit 1; }
@@ -19,7 +19,7 @@ if [ ! -f "$MONITOR_LIB" ] || [ ! -f "$HELLO_LIB" ]; then
 fi
 
 # Ustawienie ścieżki do bibliotek
-export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/root/studia/memory-monitor/src"
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:src"
 
 # Usunięcie poprzednich wyników
 rm -f monitor_*.out strace_*.txt
