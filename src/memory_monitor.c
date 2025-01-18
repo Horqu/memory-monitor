@@ -18,6 +18,8 @@ static void *(*real_mmap64)(void *, size_t, int, int, int, off_t) = NULL;
 static int   (*real_munmap)(void *, size_t) = NULL;
 static int   (*real_munmap64)(void *, size_t) = NULL;
 static void *(*real_sbrk)(intptr_t) = NULL;
+static void *(*real_dlopen)(const char *, int) = NULL;
+static int   (*real_dlclose)(void *) = NULL;
 
 // Funkcje pomocnicze
 static void printUsage();
@@ -97,6 +99,8 @@ static void init_library() {
     real_munmap   = dlsym(RTLD_NEXT, "munmap");
     real_munmap64 = dlsym(RTLD_NEXT, "munmap64");
     real_sbrk     = dlsym(RTLD_NEXT, "sbrk");
+    real_dlopen   = dlsym(RTLD_NEXT, "dlopen");
+    real_dlclose   = dlsym(RTLD_NEXT, "dlclose");
 
     safe_log("Initialized memory_monitor library.\n");
     printUsage();
@@ -219,4 +223,20 @@ void *sbrk(intptr_t increment) {
     safe_log("[sbrk] increment=%ld | new_brk=%p\n", (long)increment, res);
     printUsage();
     return res;
+}
+
+void *dlopen(const char *filename, int flag) {
+    void *handle = real_dlopen(filename, flag);
+    if (handle) {
+        safe_log("[dlopen] filename=%s | flag=%d | handle=%p\n", filename, flag, handle);
+    } else {
+        safe_log("[dlopen] filename=%s | flag=%d | failed\n", filename, flag);
+    }
+    return handle;
+}
+
+int dlclose(void *handle) {
+    int ret = real_dlclose(handle);
+    safe_log("[dlclose] handle=%p | ret=%d\n", handle, ret);
+    return ret;
 }

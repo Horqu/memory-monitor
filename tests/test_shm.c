@@ -144,7 +144,7 @@ int main() {
         if (remove_shared_memory(multiple_shmid) == -1) continue;
     }
 
-    // Test 6: Zwiększenie rozmiaru segmentu pamięci współdzielonej (niezrealizowane w System V)
+    // Test 6: Zwiększenie rozmiaru segmentu pamięci współdzielonej (niezrealizowane w System V) - pominięty
     printf("\nTest 6: Attempt to resize shared memory segment (Not supported)\n");
 
     // Test 7: Konkretne sprawdzenie uprawnień
@@ -218,11 +218,20 @@ int main() {
         printf("Unexpectedly detached invalid pointer.\n");
     }
 
-    // Test 11: Tworzenie maksymalnej liczby segmentów (ilość zależy od systemu)
+    // Test 11: Tworzenie maksymalnej liczby segmentów pamięci współdzielonej
     printf("\nTest 11: Create maximum number of shared memory segments\n");
     int max_segments_created = 0;
-    while (1) {
-        key_t max_key = ftok(".", 'y' + max_segments_created);
+    int max_allowed_segments = 100; // Ustawienie limitu, aby uniknąć nieskończonej pętli
+
+    while (max_segments_created < max_allowed_segments) {
+        // Ograniczenie zakresu znaków dla ftok, aby uniknąć przekroczenia 'z'
+        char proj_id = 'y' + (max_segments_created % 26);
+        key_t max_key = ftok(".", proj_id);
+        if (max_key == -1) {
+            perror("ftok for max_key");
+            break;
+        }
+
         int max_shmid = shmget(max_key, size, IPC_CREAT | 0666);
         if (max_shmid < 0) {
             perror("shmget");
@@ -235,18 +244,23 @@ int main() {
             break;
         }
 
-        sprintf(max_data, "Max segment %d", max_segments_created);
-        printf("Created segment %d\n", max_segments_created);
+        // Użycie snprintf dla bezpieczeństwa
+        snprintf(max_data, size, "Max segment %d", max_segments_created);
+        printf("Created segment %d: %s\n", max_segments_created, max_data);
 
         if (detach_shared_memory(max_data) == -1) {
             remove_shared_memory(max_shmid);
             break;
         }
 
-        if (remove_shared_memory(max_shmid) == -1) break;
+        if (remove_shared_memory(max_shmid) == -1) {
+            perror("remove_shared_memory during Test 11");
+            break;
+        }
+
         max_segments_created++;
     }
-    printf("Total segments created before failure: %d\n", max_segments_created);
+    printf("Total segments created before failure or reaching limit: %d\n", max_segments_created);
 
     printf("\nWszystkie testy pamięci współdzielonej zakończone.\n");
     return 0;

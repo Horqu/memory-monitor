@@ -1,7 +1,9 @@
 src/libmemory_monitor.so
+src/libhello.so
 tests/test_allocations
 tests/test_mmap
 tests/test_shm
-# *.out
-# *.txt
-# *.bin
+tests/test_library_load
+*.out
+*.txt
+*.bin
