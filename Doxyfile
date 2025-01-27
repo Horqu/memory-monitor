@@ -1,0 +1,26 @@
+# Doxyfile - minimalna konfiguracja
+
+# Nazwa projektu (pokazywana w dokumentacji)
+PROJECT_NAME           = "Memory Monitor"
+
+# Pliki wejściowe, w których Doxygen będzie szukał dokumentacji
+INPUT                  = ./src/memory_monitor.c
+FILE_PATTERNS          = *.c
+
+# Gdzie mają się znaleźć wyjściowe pliki dokumentacji
+OUTPUT_DIRECTORY       = doc
+
+# Wygeneruj dokumentację w formacie HTML
+GENERATE_HTML          = YES
+
+# Zrezygnuj z innych formatów, np. PDF (LaTeX), RTF, Man
+GENERATE_LATEX         = NO
+GENERATE_RTF           = NO
+GENERATE_MAN           = NO
+
+# Czy parsować rekurencyjnie podkatalogi (tutaj: NIE)
+RECURSIVE              = NO
+
+# Można ustawić, aby Doxygen dokumentował *wszystko*, nawet bez tagów
+# (opcjonalne; jeśli mamy już tagi w kodzie, to zwykle EXTRACT_ALL nie jest konieczne).
+EXTRACT_ALL            = YES

@@ -25,13 +25,13 @@ export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:src"
 rm -f monitor_*.out strace_*.txt
 
 # Lista testów do uruchomienia
-TESTS=("test_allocations" "test_mmap" "test_shm" "test_library_load")
-
+TESTS=("test_allocations" "test_mmap" "test_shm" "test_library_load", "script_test.sh")
 for TEST in "${TESTS[@]}"; do
   echo "Uruchamianie $TEST z memory_monitor..."
   LD_PRELOAD="$MONITOR_LIB" ./tests/"$TEST" > "monitor_${TEST}.out" 2>&1
-  if [ $? -ne 0 ]; then
-    echo "Test $TEST z memory_monitor zakończył się błędem."
+  exit_code=$?
+  if [ $exit_code -ne 0 ]; then
+    echo "Test $TEST z memory_monitor zakończył się błędem. Kod wyjscia : $exit_code"
   fi
 
   echo "Uruchamianie $TEST ze strace..."
